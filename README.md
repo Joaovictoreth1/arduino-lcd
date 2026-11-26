@@ -1,8 +1,25 @@
-# 👋 Olá! Bem-vindo ao meu Sistema de Controlo de Acessos com Arduino
+# Leitor NFC com Arduino e LCD
 
-Este é um projeto que desenvolvi para criar um leitor de cartões RFID/NFC "stand-alone" — ou seja, que funciona sozinho, dando o feedback diretamente numa tela LCD, sem precisar de estar sempre ligado à janela do Monitor Serial no ecrã do computador.
+Este exercício demonstra a leitura de tags NFC ISO 14443A com um Arduino UNO, um PN532 e um LCD 16×2, sem monitor serial. O sketch detecta tags compatíveis, mas não autentica usuários nem controla acesso.
 
-Foi um desafio muito interessante (especialmente domar os fios do ecrã LCD!), mas o resultado final é um sistema super estável. Utilizei um Arduino UNO, o famoso leitor NFC PN532 e o clássico ecrã LCD 16x2.
+## Compilar e executar
+
+Com o Arduino CLI 1.6.0 instalado, execute na raiz do repositório:
+
+```sh
+arduino-cli core update-index
+arduino-cli core install arduino:avr@1.8.8
+arduino-cli lib install --no-deps "Adafruit BusIO@1.17.4" "Adafruit PN532@1.3.4" "LiquidCrystal@1.0.7"
+arduino-cli compile --fqbn arduino:avr:uno leitor_nfc
+```
+
+Conecte o UNO e use `arduino-cli board list` para identificar a porta. Substitua `/dev/ttyACM0` pela porta correta:
+
+```sh
+arduino-cli upload --fqbn arduino:avr:uno --port /dev/ttyACM0 leitor_nfc
+```
+
+**Exemplo:** sem tag, o LCD mostra `Sistema Pronto` / `Aproxime a TAG`. Ao aproximar uma tag compatível, mostra `TAG ENCONTRADA!` / `Leitura OK` por três segundos. Se o PN532 não responder, mostra `NFC Falhou`; se a configuração falhar, mostra `Erro Config NFC`. A CI compila o sketch, mas não testa a fiação ou a leitura física.
 
 ## 💡 O "Pulo do Gato" deste Projeto
 
@@ -17,7 +34,7 @@ Quando tentamos ligar o leitor NFC (que usa comunicação muito rápida) e o ecr
 Se quiseres recriar este projeto, esta é a "receita do bolo" exata que usei para que não falhasse:
 
 ### 1. O Leitor PN532 (Configurado para SPI)
-*Nota importante:* No meio da placa vermelha do leitor há um quadradinho com botõezinhos brancos. Para o código funcionar, tive de colocar a **Chave 1 para cima (OFF)** e a **Chave 2 para baixo (ON)**.
+*Nota importante:* Confirme as posições SPI e a tensão de alimentação e dos sinais no manual do seu módulo. A tabela pressupõe um módulo compatível com 5 V; outros módulos podem exigir 3,3 V e conversão de nível. No módulo usado no projeto, SPI corresponde à **Chave 1 OFF** e à **Chave 2 ON**.
 
 | Fio do Leitor | Pino no Arduino |
 | :--- | :--- |
