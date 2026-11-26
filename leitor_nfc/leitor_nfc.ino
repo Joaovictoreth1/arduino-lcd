@@ -15,6 +15,7 @@ Adafruit_PN532 nfc(PN532_SCK, PN532_MISO, PN532_MOSI, PN532_SS);
 // --- CONFIGURAÇÃO DO DISPLAY LCD ---
 // Pinos Analógicos do Arduino ligados ao LCD (RS, E, D4, D5, D6, D7)
 LiquidCrystal lcd(A0, A1, A2, A3, A4, A5);
+bool leitorPronto = false;
 
 void setup(void) {
   // Atraso para dar tempo à tela LCD e ao leitor NFC estabilizarem a energia
@@ -30,7 +31,7 @@ void setup(void) {
   delay(1500);
 
   lcd.setCursor(0, 1); 
-  lcd.print("Display Conectado");
+  lcd.print("LCD Conectado");
   delay(2000);
 
   // Inicia o leitor NFC
@@ -43,12 +44,17 @@ void setup(void) {
     lcd.setCursor(0, 0);
     lcd.print("ERRO CRITICO:");
     lcd.setCursor(0, 1);
-    lcd.print("Leitor NFC Falhou");
-    while (1); // Para a execução do código aqui
+    lcd.print("NFC Falhou");
+    return;
   }
   
   // Configura a placa NFC para ler cartões
-  nfc.SAMConfig();
+  if (!nfc.SAMConfig()) {
+    lcd.clear();
+    lcd.print("Erro Config NFC");
+    return;
+  }
+  leitorPronto = true;
   
   // Interface de aguardar cartão
   lcd.clear();
@@ -59,6 +65,11 @@ void setup(void) {
 }
 
 void loop(void) {
+  if (!leitorPronto) {
+    delay(1000);
+    return;
+  }
+
   uint8_t success;
   uint8_t uid[] = { 0, 0, 0, 0, 0, 0, 0 };
   uint8_t uidLength;
@@ -75,7 +86,7 @@ void loop(void) {
     lcd.print("TAG ENCONTRADA!");
     
     lcd.setCursor(0, 1);
-    lcd.print("Acesso Permitido");
+    lcd.print("Leitura OK");
     
     // Mantém a mensagem de sucesso na tela por 3 segundos
     delay(3000); 
